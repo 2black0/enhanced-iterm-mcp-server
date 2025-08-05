@@ -1,7 +1,6 @@
 # 🚀 Enhanced iTerm MCP Server
 
 [![npm version](https://img.shields.io/npm/v/enhanced-iterm-mcp-server.svg)](https://www.npmjs.com/package/enhanced-iterm-mcp-server)
-[![npm downloads](https://img.shields.io/npm/dm/enhanced-iterm-mcp-server.svg)](https://www.npmjs.com/package/enhanced-iterm-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
