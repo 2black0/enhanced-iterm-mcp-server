@@ -57,6 +57,7 @@
   },
   "files": [
     "dist/",
+    "iterm_env/",
     "setup-python-api.sh",
     "README.md",
     "LICENSE"
