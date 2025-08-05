@@ -1,0 +1,67 @@
+{
+  "name": "enhanced-iterm-mcp-server",
+  "version": "2.0.0",
+  "description": "Enhanced iTerm MCP Server with Python API support - Advanced terminal automation for AI assistants",
+  "type": "module",
+  "main": "dist/index-python-api.js",
+  "bin": {
+    "enhanced-iterm-mcp": "dist/index-python-api.js"
+  },
+  "scripts": {
+    "build": "tsc src/index-python-api.ts --outDir dist --target ES2022 --module ESNext --moduleResolution Node --allowSyntheticDefaultImports --esModuleInterop --resolveJsonModule && chmod +x dist/index-python-api.js",
+    "start": "node dist/index-python-api.js",
+    "dev": "tsx src/index-python-api.ts",
+    "setup": "./setup-python-api.sh",
+    "test": "echo '{\"jsonrpc\": \"2.0\", \"method\": \"tools/list\", \"id\": 1}' | node dist/index-python-api.js",
+    "test-sessions": "echo '{\"jsonrpc\": \"2.0\", \"method\": \"tools/call\", \"params\": {\"name\": \"list-all-sessions\", \"arguments\": {}}, \"id\": 1}' | node dist/index-python-api.js",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "mcp",
+    "iterm2", 
+    "terminal",
+    "python-api",
+    "automation",
+    "model-context-protocol",
+    "macos",
+    "cli",
+    "ai-assistant",
+    "terminal-multiplexer"
+  ],
+  "author": {
+    "name": "Enhanced by Claude",
+    "email": "2black0@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2black0/enhanced-iterm-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/2black0/enhanced-iterm-mcp-server/issues"
+  },
+  "homepage": "https://github.com/2black0/enhanced-iterm-mcp-server#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.8.0"
+  },
+  "files": [
+    "dist/",
+    "iterm_env/",
+    "setup-python-api.sh",
+    "README.md",
+    "LICENSE"
+  ],
+  "os": ["darwin"],
+  "cpu": ["x64", "arm64"]
+}
