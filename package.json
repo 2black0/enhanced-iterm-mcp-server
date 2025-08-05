@@ -1,6 +1,6 @@
 {
   "name": "enhanced-iterm-mcp-server",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Enhanced iTerm MCP Server with Python API support - Advanced terminal automation for AI assistants",
   "type": "module",
   "main": "dist/index-python-api.js",
