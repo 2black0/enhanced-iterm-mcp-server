@@ -14,10 +14,12 @@
 
 ### 1. **Installation**
 
-#### **Via NPM (Recommended)**
+#### **Via NPM (Recommended) - Now Available!**
 ```bash
 npm install -g enhanced-iterm-mcp-server
 ```
+
+> 🎉 **Just Published!** The package is now available on NPM registry for easy installation.
 
 #### **From Source**
 ```bash
@@ -70,6 +72,8 @@ enhanced-iterm-mcp --help
 # ~/.npm/lib/node_modules/enhanced-iterm-mcp-server/dist/index-python-api.js
 ```
 
+> ✅ **Package is now live on NPM!** Install with `npm install -g enhanced-iterm-mcp-server`
+
 ### **Local Project Installation**
 ```bash
 # Install in project
@@ -98,6 +102,8 @@ npx enhanced-iterm-mcp-server --help
   }
 }
 ```
+
+> 🚀 **Live on NPM Registry:** https://www.npmjs.com/package/enhanced-iterm-mcp-server
 
 ## 🛠 **Available Tools**
 
