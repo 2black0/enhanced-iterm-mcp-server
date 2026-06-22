@@ -1237,6 +1237,172 @@ server.registerTool(
   }
 );
 
+// 11. Read the contents (text) of a pane — the missing "what is on screen" tool.
+//     Reads the visible grid plus scrollback history, with an optional `lines`
+//     argument that returns only the last N lines (a true "tail").
+server.registerTool(
+  "read-pane",
+  {
+    title: "Read Pane Contents",
+    description:
+      "Read the text contents of a pane's terminal buffer (visible screen plus scrollback). " +
+      "Set `lines` to return only the last N lines, like `tail`. " +
+      "Identify the pane by `paneId` (a pane opened through this server) or by a raw iTerm2 " +
+      "`sessionId` (as returned by list-all-sessions) to read any existing pane.",
+    inputSchema: {
+      paneId: z.string().describe("ID of a pane tracked by this server").optional(),
+      sessionId: z
+        .string()
+        .describe("Raw iTerm2 session ID (from list-all-sessions); use to read any pane")
+        .optional(),
+      lines: z
+        .number()
+        .int()
+        .positive()
+        .describe("Return only the last N lines (tail). Omit to return everything available.")
+        .optional(),
+      includeScrollback: z
+        .boolean()
+        .describe("Include scrollback history, not just the visible screen (default true)")
+        .optional()
+        .default(true),
+      stripTrailingBlankLines: z
+        .boolean()
+        .describe("Drop empty lines at the end of the buffer (default true)")
+        .optional()
+        .default(true)
+    }
+  },
+  async ({
+    paneId,
+    sessionId,
+    lines,
+    includeScrollback = true,
+    stripTrailingBlankLines = true
+  }: {
+    paneId?: string;
+    sessionId?: string;
+    lines?: number;
+    includeScrollback?: boolean;
+    stripTrailingBlankLines?: boolean;
+  }) => {
+    // Resolve a concrete iTerm2 session ID from either a tracked pane or a raw session ID.
+    let resolvedSessionId = sessionId;
+    if (!resolvedSessionId && paneId) {
+      const pane = panes.get(paneId);
+      if (!pane) {
+        return {
+          content: [{ type: "text", text: `Pane ${paneId} not found` }]
+        };
+      }
+      resolvedSessionId = pane.sessionId;
+    }
+
+    if (!resolvedSessionId) {
+      return {
+        content: [
+          { type: "text", text: "Provide either paneId or sessionId to read a pane" }
+        ]
+      };
+    }
+
+    const scriptContent = `
+import iterm2
+
+app = await iterm2.async_get_app(connection)
+
+# Locate the target session by its iTerm2 session ID.
+target_session = None
+for window in app.windows:
+    for tab in window.tabs:
+        for session in tab.sessions:
+            if session.session_id == "${resolvedSessionId}":
+                target_session = session
+                break
+        if target_session:
+            break
+    if target_session:
+        break
+
+if not target_session:
+    print(json.dumps({"error": "Target session not found"}))
+else:
+    # Read geometry and contents inside a single transaction so the buffer
+    # cannot shift between the two calls (per the iTerm2 API guidance).
+    async with iterm2.Transaction(connection):
+        info = await target_session.async_get_line_info()
+        grid = info.mutable_area_height
+        history = info.scrollback_buffer_height
+        overflow = info.overflow
+
+        # Absolute line numbers run from 'overflow' (oldest retrievable) up to
+        # 'overflow + history + grid' (exclusive, newest).
+        last_exclusive = overflow + history + grid
+        if ${includeScrollback ? "True" : "False"}:
+            available = history + grid
+            first_available = overflow
+        else:
+            available = grid
+            first_available = overflow + history
+
+        requested = ${lines && lines > 0 ? lines : 0}
+        num = min(requested, available) if requested > 0 else available
+
+        first = last_exclusive - num
+        if first < first_available:
+            first = first_available
+            num = last_exclusive - first
+
+        line_objs = await target_session.async_get_contents(first, num)
+
+    # iTerm2 encodes empty / space cells as NUL (chr(0)); render them as spaces.
+    text_lines = [ln.string.replace(chr(0), " ").rstrip() for ln in line_objs]
+    if ${stripTrailingBlankLines ? "True" : "False"}:
+        while text_lines and text_lines[-1] == "":
+            text_lines.pop()
+
+    result = {
+        "success": True,
+        "session_id": target_session.session_id,
+        "line_count": len(text_lines),
+        "grid_height": grid,
+        "scrollback_height": history,
+        "overflow": overflow,
+        "contents": "\\n".join(text_lines)
+    }
+    print(json.dumps(result))
+`;
+
+    try {
+      const result = await executeITermPythonScript(scriptContent);
+      const data = JSON.parse(result);
+
+      if (data.error) {
+        return {
+          content: [{ type: "text", text: `Error: ${data.error}` }]
+        };
+      }
+
+      const header =
+        `Pane contents (session ${data.session_id}) — ${data.line_count} line(s)` +
+        (lines ? ` [tail ${lines}]` : "") +
+        `\n` +
+        `(visible grid: ${data.grid_height}, scrollback: ${data.scrollback_height}` +
+        (data.overflow ? `, overflow: ${data.overflow}` : "") +
+        `)\n` +
+        `${"-".repeat(40)}\n`;
+
+      return {
+        content: [{ type: "text", text: header + data.contents }]
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: `Failed to read pane contents: ${error.message}` }]
+      };
+    }
+  }
+);
+
 // Main function to start the server
 async function main() {
   const transport = new StdioServerTransport();

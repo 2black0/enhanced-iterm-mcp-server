@@ -116,6 +116,9 @@ npx enhanced-iterm-mcp-server --help
 - `execute-command-in-pane` - Execute commands in specific panes
 - `broadcast-input` - Send commands to multiple panes simultaneously
 
+### **Reading Output**
+- `read-pane` - Read a pane's terminal text (visible screen + scrollback). Set `lines` to return only the last N lines, like `tail`.
+
 ### **Real-time Information**
 - `get-session-info` - Basic session information and status
 - `get-session-details` - Comprehensive session details with all variables
@@ -189,6 +192,26 @@ await callTool("get-session-details", {
 
 // List all active sessions
 await callTool("list-all-sessions", {})
+```
+
+### **Reading Pane Output**
+```javascript
+// Tail the last 50 lines of a pane (by tracked pane ID)
+await callTool("read-pane", {
+  paneId: "pane-0",
+  lines: 50
+})
+
+// Read everything (visible screen + scrollback) of any existing session
+await callTool("read-pane", {
+  sessionId: "213D676B-19F7-42A4-9E34-B2B81D40105B"
+})
+
+// Just the current visible screen, no scrollback
+await callTool("read-pane", {
+  sessionId: "213D676B-19F7-42A4-9E34-B2B81D40105B",
+  includeScrollback: false
+})
 ```
 
 ## 🔧 **Development**
