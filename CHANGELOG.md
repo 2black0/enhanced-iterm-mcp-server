@@ -5,6 +5,15 @@ All notable changes to Enhanced iTerm MCP Server will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- 📖 **`read-pane` tool** - Read a pane's terminal text contents (visible screen plus scrollback).
+  - `lines` argument returns only the last N lines, like `tail`.
+  - Accepts a tracked `paneId` or a raw iTerm2 `sessionId` (from `list-all-sessions`), so it can read any existing pane, not just ones opened through this server.
+  - `includeScrollback` toggles history vs. just the visible screen; `stripTrailingBlankLines` trims empty trailing lines.
+  - Reads geometry and contents inside a single iTerm2 `Transaction`, and renders empty cells (NUL) as spaces.
+
 ## [2.0.0] - 2025-08-05
 
 ### Added
